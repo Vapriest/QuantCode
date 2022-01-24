@@ -1,0 +1,469 @@
+indicator("形态123", shorttitle = "形态", overlay=true)
+
+C_DownTrend = true
+C_UpTrend = true
+var trendRule1 = "SMA50"
+var trendRule2 = "SMA50, SMA200"
+var trendRule = input.string("不检测", "检测趋势", options=[trendRule1, trendRule2, "不检测"])
+
+if trendRule == trendRule1
+	priceAvg = ta.sma(close, 50)
+	C_DownTrend := close < priceAvg
+	C_UpTrend := close > priceAvg
+
+if trendRule == trendRule2
+	sma200 = ta.sma(close, 200)
+	sma50 = ta.sma(close, 50)
+	C_DownTrend := close < sma50 and sma50 < sma200
+	C_UpTrend := close > sma50 and sma50 > sma200
+C_Len = 14 
+C_ShadowPercent = 5.0 
+C_ShadowEqualsPercent = 100.0
+C_DojiBodyPercent = 5.0
+C_Factor = 2.0 
+
+C_BodyHi = math.max(close, open)
+C_BodyLo = math.min(close, open)
+C_Body = C_BodyHi - C_BodyLo
+C_BodyAvg = ta.ema(C_Body, C_Len)
+C_SmallBody = C_Body < C_BodyAvg
+C_LongBody = C_Body > C_BodyAvg
+C_UpShadow = high - C_BodyHi
+C_DnShadow = C_BodyLo - low
+C_HasUpShadow = C_UpShadow > C_ShadowPercent / 100 * C_Body
+C_HasDnShadow = C_DnShadow > C_ShadowPercent / 100 * C_Body
+C_WhiteBody = open < close
+C_BlackBody = open > close
+C_Range = high-low
+C_IsInsideBar = C_BodyHi[1] > C_BodyHi and C_BodyLo[1] < C_BodyLo
+C_BodyMiddle = C_Body / 2 + C_BodyLo
+C_ShadowEquals = C_UpShadow == C_DnShadow or (math.abs(C_UpShadow - C_DnShadow) / C_DnShadow * 100) < C_ShadowEqualsPercent and (math.abs(C_DnShadow - C_UpShadow) / C_UpShadow * 100) < C_ShadowEqualsPercent
+C_IsDojiBody = C_Range > 0 and C_Body <= C_Range * C_DojiBodyPercent / 100
+C_Doji = C_IsDojiBody and C_ShadowEquals
+
+patternLabelPosLow = low - (ta.atr(30) * 0.6)
+patternLabelPosHigh = high + (ta.atr(30) * 0.6)
+
+label_color_bullish = input(color.blue, "标签颜色看涨")
+label_color_bearish = input(color.red, "标签颜色看跌")
+label_color_neutral = input(color.gray, "标签颜色中性")
+CandleType = input.string(title = "图案类型", defval="自动", options=["看涨", "看跌", "自动"])
+
+AbandonedBabyInput = input(title = "弃婴" ,defval=true) 
+
+DarkCloudCoverInput = input(title = "乌云盖顶" ,defval=false) 
+
+DojiInput = input(title = "十字线" ,defval=true) 
+
+DojiStarInput = input(title = "十字星" ,defval=false) 
+
+DownsideTasukiGapInput = input(title = "下肩带缺口" ,defval=false) 
+
+DragonflyDojiInput = input(title = "蜻蜓线" ,defval=true) 
+
+EngulfingInput = input(title = "吞没" ,defval=true) 
+
+EveningDojiStarInput = input(title = "黄昏十字星" ,defval=false) 
+
+EveningStarInput = input(title = "黄昏星" ,defval=false) 
+
+FallingThreeMethodsInput = input(title = "下跌三步曲" ,defval=false) 
+
+FallingWindowInput = input(title = "落窗" ,defval=false) 
+
+GravestoneDojiInput = input(title = "墓碑线" ,defval=false) 
+
+HammerInput = input(title = "锤子线" ,defval=true) 
+
+HangingManInput = input(title = "上吊线" ,defval=false) 
+
+HaramiCrossInput = input(title = "哈拉米交叉" ,defval=false) 
+
+HaramiInput = input(title = "哈拉米" ,defval=false) 
+
+InvertedHammerInput = input(title = "倒锤子线" ,defval=false) 
+
+KickingInput = input(title = "反冲线" ,defval=false) 
+
+LongLowerShadowInput = input(title = "长下影线" ,defval=false) 
+
+LongUpperShadowInput = input(title = "长上影线" ,defval=false) 
+
+MarubozuBlackInput = input(title = "光头阴线" ,defval=false) 
+
+MarubozuWhiteInput = input(title = "光头阳性" ,defval=false) 
+
+MorningDojiStarInput = input(title = "启明十字星" ,defval=false) 
+
+MorningStarInput = input(title = "启明星" ,defval=false) 
+
+OnNeckInput = input(title = "吊颈线" ,defval=false) //吊颈线 On Neck
+
+PiercingInput = input(title = "刺穿线" ,defval=false) 
+
+RisingThreeMethodsInput = input(title = "上升三法" ,defval=false) 
+
+RisingWindowInput = input(title = "上升窗口" ,defval=false) 
+
+ShootingStarInput = input(title = "流星线" ,defval=false) 
+
+SpinningTopBlackInput = input(title = "旋转陀螺阴线" ,defval=false) 
+
+SpinningTopWhiteInput = input(title = "旋转陀螺阳性" ,defval=false) 
+
+ThreeBlackCrowsInput = input(title = "三只乌鸦" ,defval=false) 
+
+ThreeWhiteSoldiersInput = input(title = "白三兵" ,defval=false) 
+
+TriStarInput = input(title = "三星形态" ,defval=false) 
+
+TweezerBottomInput = input(title = "平底" ,defval=false) //平底Tweezer Bottom 升势双夹
+
+TweezerTopInput = input(title = "平顶" ,defval=false) //平顶Tweezer Top 跌势双夹
+
+UpsideTasukiGapInput = input(title = "上肩带缺口" ,defval=false) 
+
+C_OnNeckBearishNumberOfCandles = 2
+C_OnNeckBearish = false
+if C_DownTrend and C_BlackBody[1] and C_LongBody[1] and C_WhiteBody and open < close[1] and C_SmallBody and C_Range!=0 and math.abs(close-low[1])<=C_BodyAvg*0.05
+	C_OnNeckBearish := true
+if C_OnNeckBearish  and  OnNeckInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="吊\n颈", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_RisingWindowBullishNumberOfCandles = 2
+C_RisingWindowBullish = false
+if C_UpTrend[1] and (C_Range!=0 and C_Range[1]!=0) and low > high[1]
+	C_RisingWindowBullish := true
+if C_RisingWindowBullish  and  RisingWindowInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="上\n升\n窗", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_FallingWindowBearishNumberOfCandles = 2
+C_FallingWindowBearish = false
+if C_DownTrend[1] and (C_Range!=0 and C_Range[1]!=0) and high < low[1]
+	C_FallingWindowBearish := true
+if C_FallingWindowBearish  and  FallingWindowInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="落\n窗", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_FallingThreeMethodsBearishNumberOfCandles = 5
+C_FallingThreeMethodsBearish = false
+if C_DownTrend[4] and (C_LongBody[4] and C_BlackBody[4]) and (C_SmallBody[3] and C_WhiteBody[3] and open[3]>low[4] and close[3]<high[4]) and (C_SmallBody[2] and C_WhiteBody[2] and open[2]>low[4] and close[2]<high[4]) and (C_SmallBody[1] and C_WhiteBody[1] and open[1]>low[4] and close[1]<high[4]) and (C_LongBody and C_BlackBody and close<close[4])
+	C_FallingThreeMethodsBearish := true
+if C_FallingThreeMethodsBearish  and  FallingThreeMethodsInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="下\n跌\n三\n步", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_RisingThreeMethodsBullishNumberOfCandles = 5
+C_RisingThreeMethodsBullish = false
+if C_UpTrend[4] and (C_LongBody[4] and C_WhiteBody[4]) and (C_SmallBody[3] and C_BlackBody[3] and open[3]<high[4] and close[3]>low[4]) and (C_SmallBody[2] and C_BlackBody[2] and open[2]<high[4] and close[2]>low[4]) and (C_SmallBody[1] and C_BlackBody[1] and open[1]<high[4] and close[1]>low[4]) and (C_LongBody and C_WhiteBody and close>close[4])
+	C_RisingThreeMethodsBullish := true
+if C_RisingThreeMethodsBullish  and  RisingThreeMethodsInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="上\n升\n三\n法", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_TweezerTopBearishNumberOfCandles = 2
+C_TweezerTopBearish = false
+if C_UpTrend[1] and (not C_IsDojiBody or (C_HasUpShadow and C_HasDnShadow)) and math.abs(high-high[1]) <= C_BodyAvg*0.05 and C_WhiteBody[1] and C_BlackBody and C_LongBody[1]
+	C_TweezerTopBearish := true
+if C_TweezerTopBearish  and  TweezerTopInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="平\n顶", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_TweezerBottomBullishNumberOfCandles = 2
+C_TweezerBottomBullish = false
+if C_UpTrend[1] and (not C_IsDojiBody or (C_HasUpShadow and C_HasDnShadow)) and math.abs(low-low[1]) <= C_BodyAvg*0.05 and C_BlackBody[1] and C_WhiteBody and C_LongBody[1]
+	C_TweezerBottomBullish := true
+if C_TweezerBottomBullish  and  TweezerBottomInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="平\n底", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_DarkCloudCoverBearishNumberOfCandles = 2
+C_DarkCloudCoverBearish = false
+if (C_UpTrend[1] and C_WhiteBody[1] and C_LongBody[1]) and (C_BlackBody and open >= high[1] and  close < C_BodyMiddle[1] and close > open[1])
+	C_DarkCloudCoverBearish := true
+if C_DarkCloudCoverBearish  and  DarkCloudCoverInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="乌\n云", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_DownsideTasukiGapBearishNumberOfCandles = 3
+C_DownsideTasukiGapBearish = false
+if C_LongBody[2] and C_SmallBody[1] and C_DownTrend and C_BlackBody[2] and C_BodyHi[1] < C_BodyLo[2] and C_BlackBody[1] and C_WhiteBody and C_BodyHi <= C_BodyLo[2] and C_BodyHi >= C_BodyHi[1]
+	C_DownsideTasukiGapBearish := true
+if C_DownsideTasukiGapBearish  and  DownsideTasukiGapInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="下\n肩\n缺", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_UpsideTasukiGapBullishNumberOfCandles = 3
+C_UpsideTasukiGapBullish = false
+if C_LongBody[2] and C_SmallBody[1] and C_UpTrend and C_WhiteBody[2] and C_BodyLo[1] > C_BodyHi[2] and C_WhiteBody[1] and C_BlackBody and C_BodyLo >= C_BodyHi[2] and C_BodyLo <= C_BodyLo[1]
+	C_UpsideTasukiGapBullish := true
+if C_UpsideTasukiGapBullish  and  UpsideTasukiGapInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="上\n肩\n缺", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_EveningDojiStarBearishNumberOfCandles = 3
+C_EveningDojiStarBearish = false
+if C_LongBody[2] and C_IsDojiBody[1] and C_LongBody and C_UpTrend and C_WhiteBody[2] and C_BodyLo[1] > C_BodyHi[2] and C_BlackBody and C_BodyLo <= C_BodyMiddle[2] and C_BodyLo > C_BodyLo[2] and C_BodyLo[1] > C_BodyHi
+	C_EveningDojiStarBearish := true
+if C_EveningDojiStarBearish  and  EveningDojiStarInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="黄\n昏\n十\n字\n星", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_DojiStarBearishNumberOfCandles = 2
+C_DojiStarBearish = false
+if C_UpTrend and C_WhiteBody[1] and C_LongBody[1] and C_IsDojiBody and C_BodyLo > C_BodyHi[1]
+	C_DojiStarBearish := true
+if C_DojiStarBearish  and  DojiStarInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="十\n字\n星", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_DojiStarBullishNumberOfCandles = 2
+C_DojiStarBullish = false
+if C_DownTrend and C_BlackBody[1] and C_LongBody[1] and C_IsDojiBody and C_BodyHi < C_BodyLo[1]
+	C_DojiStarBullish := true
+if C_DojiStarBullish  and  DojiStarInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="十\n字\n星", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_MorningDojiStarBullishNumberOfCandles = 3
+C_MorningDojiStarBullish = false
+if C_LongBody[2] and C_IsDojiBody[1] and C_LongBody and C_DownTrend and C_BlackBody[2] and C_BodyHi[1] < C_BodyLo[2] and C_WhiteBody and C_BodyHi >= C_BodyMiddle[2] and C_BodyHi < C_BodyHi[2] and C_BodyHi[1] < C_BodyLo
+	C_MorningDojiStarBullish := true
+if C_MorningDojiStarBullish  and  MorningDojiStarInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="启\n明\n十\n字\n星", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_PiercingBullishNumberOfCandles = 2
+C_PiercingBullish = false
+if (C_DownTrend[1] and C_BlackBody[1] and C_LongBody[1]) and (C_WhiteBody and open <= low[1] and close > C_BodyMiddle[1] and close < open[1])
+	C_PiercingBullish := true
+if C_PiercingBullish  and  PiercingInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="刺\n穿", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_HammerBullishNumberOfCandles = 1
+C_HammerBullish = false
+if C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body and not C_HasUpShadow
+    if C_DownTrend
+        C_HammerBullish := true
+if C_HammerBullish  and  HammerInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="锤\n子", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_HangingManBearishNumberOfCandles = 1
+C_HangingManBearish = false
+if C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_Body and not C_HasUpShadow
+	if C_UpTrend
+	    C_HangingManBearish := true
+if C_HangingManBearish  and  HangingManInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="上\n吊", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_ShootingStarBearishNumberOfCandles = 1
+C_ShootingStarBearish = false
+if C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_Body and not C_HasDnShadow
+	if C_UpTrend
+	    C_ShootingStarBearish := true
+if C_ShootingStarBearish  and  ShootingStarInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="流\n星", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_InvertedHammerBullishNumberOfCandles = 1
+C_InvertedHammerBullish = false
+if C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_Body and not C_HasDnShadow
+    if C_DownTrend
+        C_InvertedHammerBullish := true
+if C_InvertedHammerBullish  and  InvertedHammerInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="倒\n锤\n子", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_MorningStarBullishNumberOfCandles = 3
+C_MorningStarBullish = false
+if C_LongBody[2] and C_SmallBody[1] and C_LongBody
+    if C_DownTrend and C_BlackBody[2] and C_BodyHi[1] < C_BodyLo[2] and C_WhiteBody and C_BodyHi >= C_BodyMiddle[2] and C_BodyHi < C_BodyHi[2] and C_BodyHi[1] < C_BodyLo
+        C_MorningStarBullish := true
+if C_MorningStarBullish  and  MorningStarInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="MS", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_EveningStarBearishNumberOfCandles = 3
+C_EveningStarBearish = false
+if C_LongBody[2] and C_SmallBody[1] and C_LongBody
+    if C_UpTrend and C_WhiteBody[2] and C_BodyLo[1] > C_BodyHi[2] and C_BlackBody and C_BodyLo <= C_BodyMiddle[2] and C_BodyLo > C_BodyLo[2] and C_BodyLo[1] > C_BodyHi
+        C_EveningStarBearish := true
+if C_EveningStarBearish  and  EveningStarInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="黄\n昏\n星", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_MarubozuWhiteBullishNumberOfCandles = 1
+C_MarubozuShadowPercentWhite = 5.0
+C_MarubozuWhiteBullish = C_WhiteBody and C_LongBody and C_UpShadow <= C_MarubozuShadowPercentWhite/100*C_Body and C_DnShadow <= C_MarubozuShadowPercentWhite/100*C_Body and C_WhiteBody
+if C_MarubozuWhiteBullish  and  MarubozuWhiteInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="光\n头\n阳", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_MarubozuBlackBearishNumberOfCandles = 1
+C_MarubozuShadowPercentBearish = 5.0
+C_MarubozuBlackBearish = C_BlackBody and C_LongBody and C_UpShadow <= C_MarubozuShadowPercentBearish/100*C_Body and C_DnShadow <= C_MarubozuShadowPercentBearish/100*C_Body and C_BlackBody
+if C_MarubozuBlackBearish  and  MarubozuBlackInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="光\n头\n阴", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_DojiNumberOfCandles = 1
+C_DragonflyDoji = C_IsDojiBody and C_UpShadow <= C_Body
+C_GravestoneDojiOne = C_IsDojiBody and C_DnShadow <= C_Body
+if C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne and DojiInput
+
+    label.new(bar_index, patternLabelPosLow, text="十\n字", style=label.style_label_up, color = label_color_neutral, textcolor=color.white)
+C_GravestoneDojiBearishNumberOfCandles = 1
+C_GravestoneDojiBearish = C_IsDojiBody and C_DnShadow <= C_Body
+if C_GravestoneDojiBearish  and  GravestoneDojiInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="墓\n碑", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_DragonflyDojiBullishNumberOfCandles = 1
+C_DragonflyDojiBullish = C_IsDojiBody and C_UpShadow <= C_Body
+if C_DragonflyDojiBullish  and  DragonflyDojiInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="蜻\n蜓", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_HaramiCrossBullishNumberOfCandles = 2
+C_HaramiCrossBullish = C_LongBody[1] and C_BlackBody[1] and C_DownTrend[1] and C_IsDojiBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
+if C_HaramiCrossBullish  and  HaramiCrossInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="哈\n叉", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_HaramiCrossBearishNumberOfCandles = 2
+C_HaramiCrossBearish = C_LongBody[1] and C_WhiteBody[1] and C_UpTrend[1] and C_IsDojiBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
+if C_HaramiCrossBearish  and  HaramiCrossInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="哈\n叉", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_HaramiBullishNumberOfCandles = 2
+C_HaramiBullish = C_LongBody[1] and C_BlackBody[1] and C_DownTrend[1] and C_WhiteBody and C_SmallBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
+if C_HaramiBullish  and  HaramiInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="哈\n拉\n米", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_HaramiBearishNumberOfCandles = 2
+C_HaramiBearish = C_LongBody[1] and C_WhiteBody[1] and C_UpTrend[1] and C_BlackBody and C_SmallBody and high <= C_BodyHi[1] and low >= C_BodyLo[1]
+if C_HaramiBearish  and  HaramiInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="哈\n拉\n米", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_LongLowerShadowBullishNumberOfCandles = 1
+C_LongLowerShadowPercent = 75.0
+C_LongLowerShadowBullish = C_DnShadow > C_Range/100*C_LongLowerShadowPercent
+if C_LongLowerShadowBullish  and  LongLowerShadowInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="长\n下\n影", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_LongUpperShadowBearishNumberOfCandles = 1
+C_LongShadowPercent = 75.0
+C_LongUpperShadowBearish = C_UpShadow > C_Range/100*C_LongShadowPercent
+if C_LongUpperShadowBearish  and  LongUpperShadowInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="长\n上\n影", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_SpinningTopWhiteNumberOfCandles = 1
+C_SpinningTopWhitePercent = 34.0
+C_IsSpinningTopWhite = C_DnShadow >= C_Range / 100 * C_SpinningTopWhitePercent and C_UpShadow >= C_Range / 100 * C_SpinningTopWhitePercent and not C_IsDojiBody
+C_SpinningTopWhite = C_IsSpinningTopWhite and C_WhiteBody
+if C_SpinningTopWhite and SpinningTopWhiteInput
+
+    label.new(bar_index, patternLabelPosLow, text="陀\n螺\n阳", style=label.style_label_up, color = label_color_neutral, textcolor=color.white)
+C_SpinningTopBlackNumberOfCandles = 1
+C_SpinningTopBlackPercent = 34.0
+C_IsSpinningTop = C_DnShadow >= C_Range / 100 * C_SpinningTopBlackPercent and C_UpShadow >= C_Range / 100 * C_SpinningTopBlackPercent and not C_IsDojiBody
+C_SpinningTopBlack = C_IsSpinningTop and C_BlackBody
+if C_SpinningTopBlack and SpinningTopBlackInput
+
+    label.new(bar_index, patternLabelPosLow, text="陀\n螺\n阴", style=label.style_label_up, color = label_color_neutral, textcolor=color.white)
+C_ThreeWhiteSoldiersBullishNumberOfCandles = 3
+C_3WSld_ShadowPercent = 5.0
+C_3WSld_HaveNotUpShadow = C_Range * C_3WSld_ShadowPercent / 100 > C_UpShadow
+C_ThreeWhiteSoldiersBullish = false
+if C_LongBody and C_LongBody[1] and C_LongBody[2]
+    if C_WhiteBody and C_WhiteBody[1] and C_WhiteBody[2]
+        C_ThreeWhiteSoldiersBullish := close > close[1] and close[1] > close[2] and open < close[1] and open > open[1] and open[1] < close[2] and open[1] > open[2] and C_3WSld_HaveNotUpShadow and C_3WSld_HaveNotUpShadow[1] and C_3WSld_HaveNotUpShadow[2]
+if C_ThreeWhiteSoldiersBullish  and  ThreeWhiteSoldiersInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="白\n三\n兵", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_ThreeBlackCrowsBearishNumberOfCandles = 3
+C_3BCrw_ShadowPercent = 5.0
+C_3BCrw_HaveNotDnShadow = C_Range * C_3BCrw_ShadowPercent / 100 > C_DnShadow
+C_ThreeBlackCrowsBearish = false
+if C_LongBody and C_LongBody[1] and C_LongBody[2]
+    if C_BlackBody and C_BlackBody[1] and C_BlackBody[2]
+        C_ThreeBlackCrowsBearish := close < close[1] and close[1] < close[2] and open > close[1] and open < open[1] and open[1] > close[2] and open[1] < open[2] and C_3BCrw_HaveNotDnShadow and C_3BCrw_HaveNotDnShadow[1] and C_3BCrw_HaveNotDnShadow[2]
+if C_ThreeBlackCrowsBearish  and  ThreeBlackCrowsInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="三\n乌\n鸦", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_EngulfingBullishNumberOfCandles = 2
+C_EngulfingBullish = C_DownTrend and C_WhiteBody and C_LongBody and C_BlackBody[1] and C_SmallBody[1] and close >= open[1] and open <= close[1] and ( close > open[1] or open < close[1] )
+if C_EngulfingBullish  and  EngulfingInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="吞\n没", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_EngulfingBearishNumberOfCandles = 2
+C_EngulfingBearish = C_UpTrend and C_BlackBody and C_LongBody and C_WhiteBody[1] and C_SmallBody[1] and close <= open[1] and open >= close[1] and ( close < open[1] or open > close[1] )
+if C_EngulfingBearish  and  EngulfingInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="吞\n没", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_AbandonedBabyBullishNumberOfCandles = 3
+C_AbandonedBabyBullish = C_DownTrend[2] and C_BlackBody[2] and C_IsDojiBody[1] and low[2] > high[1] and C_WhiteBody and high[1] < low
+if C_AbandonedBabyBullish  and  AbandonedBabyInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="弃\n婴", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_AbandonedBabyBearishNumberOfCandles = 3
+C_AbandonedBabyBearish = C_UpTrend[2] and C_WhiteBody[2] and C_IsDojiBody[1] and high[2] < low[1] and C_BlackBody and low[1] > high
+if C_AbandonedBabyBearish  and  AbandonedBabyInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="弃\n婴", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_TriStarBullishNumberOfCandles = 3
+C_3DojisBullish = C_Doji[2] and C_Doji[1] and C_Doji
+C_BodyGapUpBullish = C_BodyHi[1] < C_BodyLo
+C_BodyGapDnBullish = C_BodyLo[1] > C_BodyHi
+C_TriStarBullish = C_3DojisBullish and C_DownTrend[2] and C_BodyGapDnBullish[1] and C_BodyGapUpBullish
+if C_TriStarBullish  and  TriStarInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="三\n星", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_TriStarBearishNumberOfCandles = 3
+C_3Dojis = C_Doji[2] and C_Doji[1] and C_Doji
+C_BodyGapUp = C_BodyHi[1] < C_BodyLo
+C_BodyGapDn = C_BodyLo[1] > C_BodyHi
+C_TriStarBearish = C_3Dojis and C_UpTrend[2] and C_BodyGapUp[1] and C_BodyGapDn
+if C_TriStarBearish  and  TriStarInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="三\n星", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+C_KickingBullishNumberOfCandles = 2
+C_MarubozuShadowPercent = 5.0
+C_Marubozu = C_LongBody and C_UpShadow <= C_MarubozuShadowPercent/100*C_Body and C_DnShadow <= C_MarubozuShadowPercent/100*C_Body
+C_MarubozuWhiteBullishKicking = C_Marubozu and C_WhiteBody
+C_MarubozuBlackBullish = C_Marubozu and C_BlackBody
+C_KickingBullish = C_MarubozuBlackBullish[1] and C_MarubozuWhiteBullishKicking and high[1] < low
+if C_KickingBullish  and  KickingInput and (("看涨" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosLow, text="反\n冲", style=label.style_label_up, color = label_color_bullish, textcolor=color.white)
+C_KickingBearishNumberOfCandles = 2
+C_MarubozuBullishShadowPercent = 5.0
+C_MarubozuBearishKicking = C_LongBody and C_UpShadow <= C_MarubozuBullishShadowPercent/100*C_Body and C_DnShadow <= C_MarubozuBullishShadowPercent/100*C_Body
+C_MarubozuWhiteBearish = C_MarubozuBearishKicking and C_WhiteBody
+C_MarubozuBlackBearishKicking = C_MarubozuBearishKicking and C_BlackBody
+C_KickingBearish = C_MarubozuWhiteBearish[1] and C_MarubozuBlackBearishKicking and low[1] > high
+if C_KickingBearish  and  KickingInput and (("看跌" == CandleType) or CandleType == "自动")
+
+
+    label.new(bar_index, patternLabelPosHigh, text="反\n冲", style=label.style_label_down, color = label_color_bearish, textcolor=color.white)
+
+    label.new(bar_index, patternLabelPosLow, text="Collection", style=label.style_label_up, color = label_color_neutral, textcolor=color.white)
